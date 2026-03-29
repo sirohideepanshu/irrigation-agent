@@ -1,0 +1,9 @@
+numpy
+pydantic
+openenv-core
+openai
+matplotlib
+huggingface_hub
+gradio
+fastapi
+uvicorn

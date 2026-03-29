@@ -1,0 +1,22 @@
+name: irrigation-optimization-env
+description: Smart irrigation system using predictive control and adaptive water allocation
+
+entrypoint: inference.py
+
+tasks:
+  - name: easy
+  - name: medium
+  - name: hard
+
+grader:
+  path: grader/grader.py
+  function: grade_all
+
+interface:
+  observation: dict
+  action: dict
+  reward: float
+
+metadata:
+  author: Tensor Titans
+  version: 1.0

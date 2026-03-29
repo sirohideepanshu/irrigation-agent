@@ -1,0 +1,67 @@
+# -----------------------------
+# Python environments
+# -----------------------------
+.venv
+venv
+env
+
+# -----------------------------
+# Python cache
+# -----------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -----------------------------
+# Jupyter / temp files
+# -----------------------------
+.ipynb_checkpoints
+
+# -----------------------------
+# OS files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# Git (not needed in container)
+# -----------------------------
+.git
+.gitignore
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+
+# -----------------------------
+# Local outputs / generated files
+# -----------------------------
+output_plot.png
+outputs/
+*.png
+*.jpg
+*.jpeg
+
+# -----------------------------
+# Large unnecessary folders
+# -----------------------------
+node_modules/
+dist/
+build/
+
+# -----------------------------
+# Mac / system junk
+# -----------------------------
+*.swp
+*.swo
+
+# -----------------------------
+# Anything hidden (optional safety)
+# -----------------------------
+.*
+!.dockerignore
+!README.md
+!requirements.txt
+!openenv.yaml
