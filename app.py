@@ -413,7 +413,7 @@ def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
         yield error_outputs
 
 
-with gr.Blocks(title="Smart Irrigation AI", theme=gr.themes.Base(), css=APP_CSS) as demo:
+with gr.Blocks(title="Smart Irrigation AI", theme=gr.themes.Default(), css=APP_CSS) as demo:
     gr.HTML(
         """
         <div class="app-shell">
@@ -538,4 +538,4 @@ demo.queue()
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, share=True)
+    demo.launch(server_name="0.0.0.0", server_port=7860)
