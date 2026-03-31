@@ -1,10 +1,19 @@
 from __future__ import annotations
 import os
+import sys
+import types
+
 os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
 os.environ["GRADIO_DISABLE_AUDIO"] = "1"
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 
 from functools import lru_cache
 
+# Prevent optional audio imports from loading pydub/audioop on Spaces.
+if "pydub" not in sys.modules:
+    pydub_stub = types.ModuleType("pydub")
+    pydub_stub.AudioSegment = None
+    sys.modules["pydub"] = pydub_stub
 
 import gradio as gr
 import matplotlib
