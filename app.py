@@ -361,19 +361,23 @@ def _current_summary_markdown(summary):
     return "\n".join(lines)
 
 
+def _safe_output_tuple(values):
+    return tuple(str(value) if isinstance(value, dict) else value for value in values)
+
+
 def _build_output_tuple(event, summary, update_plots=True):
     overview_plots = _build_overview_outputs(summary) if update_plots else tuple([gr.skip()] * 3)
     task_plots = _build_plot_outputs(summary) if update_plots else tuple([gr.skip()] * 9)
-    return (
-        _status_markdown(event),
-        _score_markdown(summary),
-        _current_summary_markdown(summary),
-        _system_intelligence_markdown(summary),
-        _warning_markdown(summary),
-        _logs_text(summary),
+    return _safe_output_tuple((
+        str(_status_markdown(event)),
+        str(_score_markdown(summary)),
+        str(_current_summary_markdown(summary)),
+        str(_system_intelligence_markdown(summary)),
+        str(_warning_markdown(summary)),
+        str(_logs_text(summary)),
         *overview_plots,
         *task_plots,
-    )
+    ))
 
 
 def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
@@ -400,6 +404,9 @@ def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
             yield _build_output_tuple(event, summary, update_plots=should_refresh_plots)
 
     except Exception as exc:
+        import traceback
+
+        print(traceback.format_exc())
         error_outputs = (
             "### Live Status\nSimulation failed.",
             "### Final Scores\nNo scores available because the simulation failed.",
@@ -410,7 +417,7 @@ def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
             *_empty_overview_outputs(),
             *_empty_task_outputs(),
         )
-        yield error_outputs
+        yield _safe_output_tuple(error_outputs)
 
 
 with gr.Blocks(title="Smart Irrigation AI", theme=gr.themes.Default(), css=APP_CSS) as demo:
@@ -538,4 +545,4 @@ demo.queue()
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, share=True)
+    demo.launch(server_name="0.0.0.0", server_port=7860)
