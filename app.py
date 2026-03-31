@@ -361,8 +361,21 @@ def _current_summary_markdown(summary):
     return "\n".join(lines)
 
 
+# FIX: prevent dict from reaching Gradio
+def safe_value(x):
+    if isinstance(x, dict):
+        import json
+
+        return json.dumps(x, indent=2)
+    return x
+
+
+# FIX: keep generator outputs debuggable and sanitized before Gradio sees them
 def _safe_output_tuple(values):
-    return tuple(str(value) if isinstance(value, dict) else value for value in values)
+    outputs = tuple(safe_value(value) for value in values)
+    for i, val in enumerate(outputs):
+        print(f"OUTPUT {i}: {type(val)}")
+    return outputs
 
 
 def _build_output_tuple(event, summary, update_plots=True):
