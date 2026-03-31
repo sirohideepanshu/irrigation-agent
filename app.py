@@ -142,27 +142,6 @@ body::after {
     background: rgba(15, 23, 42, 0.64) !important;
 }
 """
-
-
-def launch_with_fallback(demo_app: gr.Blocks) -> None:
-    launch_kwargs = {
-        "show_error": True,
-    }
-
-    server_name = os.getenv("GRADIO_SERVER_NAME")
-    server_port = os.getenv("GRADIO_SERVER_PORT")
-
-    if server_name:
-        launch_kwargs["server_name"] = server_name
-    if server_port:
-        launch_kwargs["server_port"] = int(server_port)
-
-    if not server_name:
-        launch_kwargs["inbrowser"] = True
-
-    demo_app.launch(**launch_kwargs)
-
-
 def _empty_task_outputs():
     return tuple(
         create_empty_figure(f"{task.title()} {metric}", "Run simulation to generate insights")
@@ -559,4 +538,4 @@ demo.queue()
 
 
 if __name__ == "__main__":
-    launch_with_fallback(demo)
+    demo.launch(server_name="0.0.0.0", server_port=7860, share=True)
