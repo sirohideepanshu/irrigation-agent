@@ -1,7 +1,10 @@
+spec_version: 1
 name: irrigation-optimization-env
-description: Smart irrigation system using predictive control and adaptive water allocation
-
-entrypoint: inference.py
+description: Smart irrigation environment with deterministic evaluation, structured reasoning, and Gradio visualization.
+type: space
+runtime: gradio
+app: app.py
+port: 7860
 
 tasks:
   - name: easy
@@ -12,11 +15,6 @@ grader:
   path: grader/grader.py
   function: grade_all
 
-interface:
-  observation: dict
-  action: dict
-  reward: float
-
 metadata:
   author: Tensor Titans
-  version: 1.0
+  version: 1.1.0

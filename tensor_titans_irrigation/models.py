@@ -1,27 +1,33 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree.
+from __future__ import annotations
 
-"""
-Data models for the Tensor Titans Irrigation Environment.
+from typing import Dict, List
 
-The tensor_titans_irrigation environment is a simple test environment that echoes back messages.
-"""
-
-from openenv.core.env_server.types import Action, Observation
 from pydantic import Field
+
+try:
+    from openenv.core.env_server.types import Action, Observation
+except ImportError:  # pragma: no cover
+    from pydantic import BaseModel
+
+    class Action(BaseModel):
+        pass
+
+    class Observation(BaseModel):
+        reward: float | None = None
+        done: bool = False
+        metadata: Dict[str, object] = Field(default_factory=dict)
 
 
 class TensorTitansIrrigationAction(Action):
-    """Action for the Tensor Titans Irrigation environment - just a message to echo."""
-
-    message: str = Field(..., description="Message to echo back")
+    zone_id: int = Field(..., ge=0, description="Zone index to irrigate.")
+    water_mm: float = Field(..., ge=0.0, le=12.0, description="Requested irrigation in mm.")
 
 
 class TensorTitansIrrigationObservation(Observation):
-    """Observation from the Tensor Titans Irrigation environment - the echoed message."""
-
-    echoed_message: str = Field(default="", description="The echoed message")
-    message_length: int = Field(default=0, description="Length of the echoed message")
+    soil_moisture: List[float] = Field(default_factory=list, description="Current soil moisture per zone.")
+    water_budget: float = Field(default=0.0, description="Remaining water budget.")
+    rain_forecast: float = Field(default=0.0, description="Rain forecast percentage.")
+    temperature: float = Field(default=0.0, description="Current ambient temperature.")
+    day: int = Field(default=0, description="Current day within the episode.")
+    target_moisture: float = Field(default=55.0, description="Task moisture target.")
+    last_reasoning: str = Field(default="", description="Structured text summary for the latest step.")

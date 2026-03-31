@@ -1,104 +1,60 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree.
-
-"""
-Tensor Titans Irrigation Environment Implementation.
-
-A simple test environment that echoes back messages sent to it.
-Perfect for testing HTTP server infrastructure.
-"""
+from __future__ import annotations
 
 from uuid import uuid4
 
-from openenv.core.env_server.interfaces import Environment
-from openenv.core.env_server.types import State
+from env.irrigation_env import IrrigationEnv
+
+try:
+    from openenv.core.env_server.interfaces import Environment
+    from openenv.core.env_server.types import State
+except ImportError:  # pragma: no cover
+    from pydantic import BaseModel
+
+    class State(BaseModel):
+        episode_id: str
+        step_count: int = 0
+
+    class Environment:
+        pass
 
 try:
     from ..models import TensorTitansIrrigationAction, TensorTitansIrrigationObservation
-except ImportError:
-    from models import TensorTitansIrrigationAction, TensorTitansIrrigationObservation
+except ImportError:  # pragma: no cover
+    from tensor_titans_irrigation.models import TensorTitansIrrigationAction, TensorTitansIrrigationObservation
 
 
 class TensorTitansIrrigationEnvironment(Environment):
-    """
-    A simple echo environment that echoes back messages.
-
-    This environment is designed for testing the HTTP server infrastructure.
-    It maintains minimal state and simply echoes back whatever message it receives.
-
-    Example:
-        >>> env = TensorTitansIrrigationEnvironment()
-        >>> obs = env.reset()
-        >>> print(obs.echoed_message)  # "Tensor Titans Irrigation environment ready!"
-        >>>
-        >>> obs = env.step(TensorTitansIrrigationAction(message="Hello"))
-        >>> print(obs.echoed_message)  # "Hello"
-        >>> print(obs.message_length)  # 5
-    """
-
-    # Enable concurrent WebSocket sessions.
-    # Set to True if your environment isolates state between instances.
-    # When True, multiple WebSocket clients can connect simultaneously, each
-    # getting their own environment instance (when using factory mode in app.py).
     SUPPORTS_CONCURRENT_SESSIONS: bool = True
 
     def __init__(self):
-        """Initialize the tensor_titans_irrigation environment."""
+        self._env = IrrigationEnv("hard", seed=2026)
         self._state = State(episode_id=str(uuid4()), step_count=0)
-        self._reset_count = 0
 
     def reset(self) -> TensorTitansIrrigationObservation:
-        """
-        Reset the environment.
-
-        Returns:
-            TensorTitansIrrigationObservation with a ready message
-        """
         self._state = State(episode_id=str(uuid4()), step_count=0)
-        self._reset_count += 1
-
-        return TensorTitansIrrigationObservation(
-            echoed_message="Tensor Titans Irrigation environment ready!",
-            message_length=0,
-            done=False,
-            reward=0.0,
-        )
+        observation = self._env.reset(seed=2026)
+        return self._to_observation(observation, reward=0.0, done=False, metadata={"task": "hard"})
 
     def step(self, action: TensorTitansIrrigationAction) -> TensorTitansIrrigationObservation:  # type: ignore[override]
-        """
-        Execute a step in the environment by echoing the message.
-
-        Args:
-            action: TensorTitansIrrigationAction containing the message to echo
-
-        Returns:
-            TensorTitansIrrigationObservation with the echoed message and its length
-        """
         self._state.step_count += 1
-
-        message = action.message
-        length = len(message)
-
-        # Simple reward: longer messages get higher rewards
-        reward = length * 0.1
-
-        return TensorTitansIrrigationObservation(
-            echoed_message=message,
-            message_length=length,
-            done=False,
-            reward=reward,
-            metadata={"original_message": message, "step": self._state.step_count},
-        )
+        observation, reward, done, info = self._env.step({"zone_id": action.zone_id, "water_mm": action.water_mm})
+        return self._to_observation(observation, reward=reward, done=done, metadata=info)
 
     @property
     def state(self) -> State:
-        """
-        Get the current environment state.
-
-        Returns:
-            Current State with episode_id and step_count
-        """
         return self._state
+
+    def _to_observation(self, observation: dict, reward: float, done: bool, metadata: dict) -> TensorTitansIrrigationObservation:
+        explanation = dict(metadata.get("explanation", {}))
+        return TensorTitansIrrigationObservation(
+            soil_moisture=[float(value) for value in observation.get("soil_moisture", [])],
+            water_budget=float(observation.get("water_budget", 0.0)),
+            rain_forecast=float(observation.get("rain_forecast", 0.0)),
+            temperature=float(observation.get("temperature", 0.0)),
+            day=int(observation.get("day", 0)),
+            target_moisture=float(observation.get("target_moisture", 55.0)),
+            last_reasoning=str(explanation.get("summary", "")),
+            reward=float(reward),
+            done=bool(done),
+            metadata=metadata,
+        )

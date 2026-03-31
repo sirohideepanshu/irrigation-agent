@@ -1,10 +1,4 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree.
-
-"""Tensor Titans Irrigation Environment Client."""
+from __future__ import annotations
 
 from typing import Dict
 
@@ -18,60 +12,22 @@ from .models import TensorTitansIrrigationAction, TensorTitansIrrigationObservat
 class TensorTitansIrrigationEnv(
     EnvClient[TensorTitansIrrigationAction, TensorTitansIrrigationObservation, State]
 ):
-    """
-    Client for the Tensor Titans Irrigation Environment.
-
-    This client maintains a persistent WebSocket connection to the environment server,
-    enabling efficient multi-step interactions with lower latency.
-    Each client instance has its own dedicated environment session on the server.
-
-    Example:
-        >>> # Connect to a running server
-        >>> with TensorTitansIrrigationEnv(base_url="http://localhost:8000") as client:
-        ...     result = client.reset()
-        ...     print(result.observation.echoed_message)
-        ...
-        ...     result = client.step(TensorTitansIrrigationAction(message="Hello!"))
-        ...     print(result.observation.echoed_message)
-
-    Example with Docker:
-        >>> # Automatically start container and connect
-        >>> client = TensorTitansIrrigationEnv.from_docker_image("tensor_titans_irrigation-env:latest")
-        >>> try:
-        ...     result = client.reset()
-        ...     result = client.step(TensorTitansIrrigationAction(message="Test"))
-        ... finally:
-        ...     client.close()
-    """
-
     def _step_payload(self, action: TensorTitansIrrigationAction) -> Dict:
-        """
-        Convert TensorTitansIrrigationAction to JSON payload for step message.
-
-        Args:
-            action: TensorTitansIrrigationAction instance
-
-        Returns:
-            Dictionary representation suitable for JSON encoding
-        """
         return {
-            "message": action.message,
+            "zone_id": action.zone_id,
+            "water_mm": action.water_mm,
         }
 
     def _parse_result(self, payload: Dict) -> StepResult[TensorTitansIrrigationObservation]:
-        """
-        Parse server response into StepResult[TensorTitansIrrigationObservation].
-
-        Args:
-            payload: JSON response data from server
-
-        Returns:
-            StepResult with TensorTitansIrrigationObservation
-        """
         obs_data = payload.get("observation", {})
         observation = TensorTitansIrrigationObservation(
-            echoed_message=obs_data.get("echoed_message", ""),
-            message_length=obs_data.get("message_length", 0),
+            soil_moisture=obs_data.get("soil_moisture", []),
+            water_budget=obs_data.get("water_budget", 0.0),
+            rain_forecast=obs_data.get("rain_forecast", 0.0),
+            temperature=obs_data.get("temperature", 0.0),
+            day=obs_data.get("day", 0),
+            target_moisture=obs_data.get("target_moisture", 55.0),
+            last_reasoning=obs_data.get("last_reasoning", ""),
             done=payload.get("done", False),
             reward=payload.get("reward"),
             metadata=obs_data.get("metadata", {}),
@@ -84,15 +40,6 @@ class TensorTitansIrrigationEnv(
         )
 
     def _parse_state(self, payload: Dict) -> State:
-        """
-        Parse server response into State object.
-
-        Args:
-            payload: JSON response from state request
-
-        Returns:
-            State object with episode_id and step_count
-        """
         return State(
             episode_id=payload.get("episode_id"),
             step_count=payload.get("step_count", 0),

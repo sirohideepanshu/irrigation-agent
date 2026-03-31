@@ -1,8 +1,8 @@
 ---
 title: Tensor Titans Irrigation Environment Server
-emoji: 🎣
-colorFrom: pink
-colorTo: red
+emoji: 🌱
+colorFrom: green
+colorTo: blue
 sdk: docker
 pinned: false
 app_port: 8000
@@ -13,243 +13,41 @@ tags:
 
 # Tensor Titans Irrigation Environment
 
-A simple test environment that echoes back messages. Perfect for testing the env APIs as well as demonstrating environment usage patterns.
+This package exposes the smart irrigation environment as an OpenEnv-compatible FastAPI server.
 
-## Quick Start
+## What The Server Provides
 
-The simplest way to use the Tensor Titans Irrigation environment is through the `TensorTitansIrrigationEnv` class:
+- deterministic resets for reproducible evaluation
+- validated `zone_id` and `water_mm` actions
+- irrigation observations with soil moisture, water budget, rain forecast, and temperature
+- structured step metadata with reasoning and reward breakdowns
 
-```python
-from tensor_titans_irrigation import TensorTitansIrrigationAction, TensorTitansIrrigationEnv
+## Action Schema
 
-try:
-    # Create environment from Docker image
-    tensor_titans_irrigationenv = TensorTitansIrrigationEnv.from_docker_image("tensor_titans_irrigation-env:latest")
+- `zone_id`: irrigation zone index
+- `water_mm`: requested irrigation amount in `mm` between `0` and `12`
 
-    # Reset
-    result = tensor_titans_irrigationenv.reset()
-    print(f"Reset: {result.observation.echoed_message}")
+## Observation Schema
 
-    # Send multiple messages
-    messages = ["Hello, World!", "Testing echo", "Final message"]
+- `soil_moisture`: moisture values for all zones
+- `water_budget`: remaining water budget
+- `rain_forecast`: forecasted rain probability
+- `temperature`: current temperature
+- `day`: current episode step
+- `target_moisture`: control target for the active scenario
+- `last_reasoning`: text summary of the latest decision
 
-    for msg in messages:
-        result = tensor_titans_irrigationenv.step(TensorTitansIrrigationAction(message=msg))
-        print(f"Sent: '{msg}'")
-        print(f"  → Echoed: '{result.observation.echoed_message}'")
-        print(f"  → Length: {result.observation.message_length}")
-        print(f"  → Reward: {result.reward}")
-
-finally:
-    # Always clean up
-    tensor_titans_irrigationenv.close()
-```
-
-That's it! The `TensorTitansIrrigationEnv.from_docker_image()` method handles:
-- Starting the Docker container
-- Waiting for the server to be ready
-- Connecting to the environment
-- Container cleanup when you call `close()`
-
-## Building the Docker Image
-
-Before using the environment, you need to build the Docker image:
+## Run Locally
 
 ```bash
-# From project root
-docker build -t tensor_titans_irrigation-env:latest -f server/Dockerfile .
+docker build -t tensor-titans-irrigation-env:latest -f server/Dockerfile .
+docker run -p 8000:8000 tensor-titans-irrigation-env:latest
 ```
 
-## Deploying to Hugging Face Spaces
+## Deploy
 
-You can easily deploy your OpenEnv environment to Hugging Face Spaces using the `openenv push` command:
+From the package directory containing [`openenv.yaml`](/Users/adityasingh/Desktop/irrigation-openenv/tensor_titans_irrigation/openenv.yaml):
 
 ```bash
-# From the environment directory (where openenv.yaml is located)
 openenv push
-
-# Or specify options
-openenv push --namespace my-org --private
-```
-
-The `openenv push` command will:
-1. Validate that the directory is an OpenEnv environment (checks for `openenv.yaml`)
-2. Prepare a custom build for Hugging Face Docker space (enables web interface)
-3. Upload to Hugging Face (ensuring you're logged in)
-
-### Prerequisites
-
-- Authenticate with Hugging Face: The command will prompt for login if not already authenticated
-
-### Options
-
-- `--directory`, `-d`: Directory containing the OpenEnv environment (defaults to current directory)
-- `--repo-id`, `-r`: Repository ID in format 'username/repo-name' (defaults to 'username/env-name' from openenv.yaml)
-- `--base-image`, `-b`: Base Docker image to use (overrides Dockerfile FROM)
-- `--private`: Deploy the space as private (default: public)
-
-### Examples
-
-```bash
-# Push to your personal namespace (defaults to username/env-name from openenv.yaml)
-openenv push
-
-# Push to a specific repository
-openenv push --repo-id my-org/my-env
-
-# Push with a custom base image
-openenv push --base-image ghcr.io/meta-pytorch/openenv-base:latest
-
-# Push as a private space
-openenv push --private
-
-# Combine options
-openenv push --repo-id my-org/my-env --base-image custom-base:latest --private
-```
-
-After deployment, your space will be available at:
-`https://huggingface.co/spaces/<repo-id>`
-
-The deployed space includes:
-- **Web Interface** at `/web` - Interactive UI for exploring the environment
-- **API Documentation** at `/docs` - Full OpenAPI/Swagger interface
-- **Health Check** at `/health` - Container health monitoring
-- **WebSocket** at `/ws` - Persistent session endpoint for low-latency interactions
-
-## Environment Details
-
-### Action
-**TensorTitansIrrigationAction**: Contains a single field
-- `message` (str) - The message to echo back
-
-### Observation
-**TensorTitansIrrigationObservation**: Contains the echo response and metadata
-- `echoed_message` (str) - The message echoed back
-- `message_length` (int) - Length of the message
-- `reward` (float) - Reward based on message length (length × 0.1)
-- `done` (bool) - Always False for echo environment
-- `metadata` (dict) - Additional info like step count
-
-### Reward
-The reward is calculated as: `message_length × 0.1`
-- "Hi" → reward: 0.2
-- "Hello, World!" → reward: 1.3
-- Empty message → reward: 0.0
-
-## Advanced Usage
-
-### Connecting to an Existing Server
-
-If you already have a Tensor Titans Irrigation environment server running, you can connect directly:
-
-```python
-from tensor_titans_irrigation import TensorTitansIrrigationEnv
-
-# Connect to existing server
-tensor_titans_irrigationenv = TensorTitansIrrigationEnv(base_url="<ENV_HTTP_URL_HERE>")
-
-# Use as normal
-result = tensor_titans_irrigationenv.reset()
-result = tensor_titans_irrigationenv.step(TensorTitansIrrigationAction(message="Hello!"))
-```
-
-Note: When connecting to an existing server, `tensor_titans_irrigationenv.close()` will NOT stop the server.
-
-### Using the Context Manager
-
-The client supports context manager usage for automatic connection management:
-
-```python
-from tensor_titans_irrigation import TensorTitansIrrigationAction, TensorTitansIrrigationEnv
-
-# Connect with context manager (auto-connects and closes)
-with TensorTitansIrrigationEnv(base_url="http://localhost:8000") as env:
-    result = env.reset()
-    print(f"Reset: {result.observation.echoed_message}")
-    # Multiple steps with low latency
-    for msg in ["Hello", "World", "!"]:
-        result = env.step(TensorTitansIrrigationAction(message=msg))
-        print(f"Echoed: {result.observation.echoed_message}")
-```
-
-The client uses WebSocket connections for:
-- **Lower latency**: No HTTP connection overhead per request
-- **Persistent session**: Server maintains your environment state
-- **Efficient for episodes**: Better for many sequential steps
-
-### Concurrent WebSocket Sessions
-
-The server supports multiple concurrent WebSocket connections. To enable this,
-modify `server/app.py` to use factory mode:
-
-```python
-# In server/app.py - use factory mode for concurrent sessions
-app = create_app(
-    TensorTitansIrrigationEnvironment,  # Pass class, not instance
-    TensorTitansIrrigationAction,
-    TensorTitansIrrigationObservation,
-    max_concurrent_envs=4,  # Allow 4 concurrent sessions
-)
-```
-
-Then multiple clients can connect simultaneously:
-
-```python
-from tensor_titans_irrigation import TensorTitansIrrigationAction, TensorTitansIrrigationEnv
-from concurrent.futures import ThreadPoolExecutor
-
-def run_episode(client_id: int):
-    with TensorTitansIrrigationEnv(base_url="http://localhost:8000") as env:
-        result = env.reset()
-        for i in range(10):
-            result = env.step(TensorTitansIrrigationAction(message=f"Client {client_id}, step {i}"))
-        return client_id, result.observation.message_length
-
-# Run 4 episodes concurrently
-with ThreadPoolExecutor(max_workers=4) as executor:
-    results = list(executor.map(run_episode, range(4)))
-```
-
-## Development & Testing
-
-### Direct Environment Testing
-
-Test the environment logic directly without starting the HTTP server:
-
-```bash
-# From the server directory
-python3 server/tensor_titans_irrigation_environment.py
-```
-
-This verifies that:
-- Environment resets correctly
-- Step executes actions properly
-- State tracking works
-- Rewards are calculated correctly
-
-### Running Locally
-
-Run the server locally for development:
-
-```bash
-uvicorn server.app:app --reload
-```
-
-## Project Structure
-
-```
-tensor_titans_irrigation/
-├── .dockerignore         # Docker build exclusions
-├── __init__.py            # Module exports
-├── README.md              # This file
-├── openenv.yaml           # OpenEnv manifest
-├── pyproject.toml         # Project metadata and dependencies
-├── uv.lock                # Locked dependencies (generated)
-├── client.py              # TensorTitansIrrigationEnv client
-├── models.py              # Action and Observation models
-└── server/
-    ├── __init__.py        # Server module exports
-    ├── tensor_titans_irrigation_environment.py  # Core environment logic
-    ├── app.py             # FastAPI application (HTTP + WebSocket endpoints)
-    └── Dockerfile         # Container image definition
 ```

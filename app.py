@@ -1,10 +1,10 @@
 from __future__ import annotations
+import os
+os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
+os.environ["GRADIO_DISABLE_AUDIO"] = "1"
 
 from functools import lru_cache
-import os
 
-os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 
 import gradio as gr
 import matplotlib

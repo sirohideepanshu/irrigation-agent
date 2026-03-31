@@ -1,186 +1,189 @@
-import json
+from __future__ import annotations
 
+import json
+from typing import Dict, Iterable, Mapping, Optional
+
+from agent.policy import SmartIrrigationAgent, TASK_TARGETS
+from grader.grader import evaluate
 from tasks.easy import create_env as create_easy
 from tasks.medium import create_env as create_medium
 from tasks.hard import create_env as create_hard
 
-from grader.grader import evaluate
-from visualize import plot_rewards
+
+# -----------------------------
+# TASK SETUP
+# -----------------------------
+TASK_CREATORS = {
+    "easy": create_easy,
+    "medium": create_medium,
+    "hard": create_hard,
+}
 
 
-class SmartIrrigationAgent:
-    def __init__(self):
-        self.prev_soil = {}
-
-    def predict_soil(self, soil, water, rain, temp):
-        water_effect = 0.8 * water
-        rain_effect = 4 if rain == 1 else 0
-        evaporation = max(0, (temp - 25) * 0.25)
-
-        return soil + water_effect + rain_effect - evaporation
-
-    def get_action(self, state, zone_id):
-        soil = state["soil_moisture"][zone_id]
-        prev = self.prev_soil.get(zone_id, soil)
-
-        delta = soil - prev
-
-        rain = int(state.get("rain_forecast", 0))
-        temp = float(state.get("temperature", 25))
-
-        TARGET = 52
-        LOW = 46
-        HIGH = 58
-
-        # ---------------------------
-        # BASE CONTROL (smooth)
-        # ---------------------------
-        error = TARGET - soil
-        water = 0.5 * error
-
-        # ---------------------------
-        # LOW SOIL HANDLING (CONTROLLED)
-        # ---------------------------
-        if soil < 25:
-            water = 8
-        elif soil < 35:
-            water += 3
-        elif soil < 45:
-            water += 1
-
-        # ---------------------------
-        # RAIN INTELLIGENCE
-        # ---------------------------
-        if rain == 1:
-            water *= 0.7
-            if soil > 52:
-                water -= 1
-
-        # ---------------------------
-        # TEMPERATURE
-        # ---------------------------
-        if temp > 35:
-            water += 2
-
-        # ---------------------------
-        # PREDICTION CORRECTION
-        # ---------------------------
-        predicted = self.predict_soil(soil, water, rain, temp)
-
-        if predicted > HIGH:
-            water -= 2
-        elif predicted < LOW:
-            water += 2
-
-        # ---------------------------
-        # OVERWATER CONTROL
-        # ---------------------------
-        if delta > 5:
-            water -= 2
-
-        # ---------------------------
-        # HIGH SOIL
-        # ---------------------------
-        if soil > 65:
-            water = 0
-
-        # ---------------------------
-        # SAFETY
-        # ---------------------------
-        if soil < 40 and water < 1:
-            water = 1
-
-        # ---------------------------
-        # Clamp
-        # ---------------------------
-        water = max(0, min(12, int(round(water))))
-
-        print(
-            f"    Zone {zone_id} | Soil: {soil:.2f} | Delta: {delta:.2f} | "
-            f"Rain: {rain} | Temp: {temp} | Pred: {predicted:.2f} | Water: {water}"
-        )
-
-        self.prev_soil[zone_id] = soil
-
-        return {
-            "zone_id": zone_id,
-            "water_mm": water
-        }
+# -----------------------------
+# HELPERS
+# -----------------------------
+def _clamp(value: float, minimum: float, maximum: float) -> float:
+    return max(minimum, min(maximum, value))
 
 
-def run_task(task_name, create_env_fn):
-    print(f"\nRunning {task_name.upper()} TASK")
-    print("=" * 60)
+def normalize_config(config=None):
+    config = dict(config or {})
+    return {
+        "temperature": float(_clamp(float(config.get("temperature", 30)), -10, 60)),
+        "rain_forecast": float(_clamp(float(config.get("rain_forecast", 35)), 0, 100)),
+        "soil_moisture": float(_clamp(float(config.get("soil_moisture", 45)), 0, 100)),
+        "selected_zone": int(config.get("selected_zone", 0)),
+        "seed": int(config.get("seed", 2026)),
+    }
 
-    env = create_env_fn()
-    state = env.reset()
+
+# -----------------------------
+# RUN SINGLE TASK
+# -----------------------------
+def run_task(task_name, create_env_fn, config):
+    env = create_env_fn(seed=config["seed"])
+    state = env.reset(seed=config["seed"], initial_conditions=config)
 
     agent = SmartIrrigationAgent()
 
     total_reward = 0
     steps = 0
-    rewards = []
 
-    while True:
+    rewards = []
+    logs = []
+    water_usage = []
+    cumulative_water = []
+    total_water = 0
+
+    # ✅ IMPORTANT (fix soil graph)
+    avg_soil = []
+    focus_soil = []
+
+    done = False
+
+    while not done:
         for zone_id in range(len(state["soil_moisture"])):
 
-            action = agent.get_action(state, zone_id)
+            action = agent.get_action(
+                state=state,
+                zone_id=zone_id,
+                task_name=task_name,
+                remaining_budget=float(state.get("water_budget", 0)),
+            )
 
-            state, reward, done, info = env.step(action)
-
-            extra_state = {
-                k: int(v) if "int" in str(type(v)) else float(v) if "float" in str(type(v)) else v
-                for k, v in state.items() if k != "soil_moisture"
+            env_action = {
+                "zone_id": zone_id,
+                "water_mm": int(action["water_mm"]),
             }
 
-            print(
-                f"[{task_name}] Step {steps:02d} | Zone {zone_id} | "
-                f"Soil: {state['soil_moisture'][zone_id]:.2f} | "
-                f"Water: {action['water_mm']} | Reward: {reward:.3f} | "
-                f"Extra: {extra_state}"
-            )
+            state, reward, done, info = env.step(env_action)
 
             total_reward += reward
             rewards.append(reward)
             steps += 1
 
+            used = env.last_action.get("applied_water_mm", 0)
+            total_water += used
+            water_usage.append(used)
+            cumulative_water.append(total_water)
+
+            # ✅ FIX: Soil tracking
+            avg_soil.append(sum(state["soil_moisture"]) / len(state["soil_moisture"]))
+            focus_soil.append(state["soil_moisture"][config["selected_zone"]])
+
+            logs.append(
+                json.dumps({
+                    "task": task_name,
+                    "step": steps,
+                    "zone": zone_id + 1,
+                    "water": action["water_mm"],
+                    "reward": round(reward, 4)
+                })
+            )
+
             if done:
                 break
 
-        if done:
-            break
-
     score = evaluate(total_reward, steps, state)
 
-    print(f"\n{task_name.upper()} RESULTS")
-    print("-" * 40)
-    print(f"Score           : {score:.3f}")
-    print(f"Avg Reward      : {sum(rewards)/len(rewards):.3f}")
-    print(f"Max Reward      : {max(rewards):.3f}")
-    print(f"Min Reward      : {min(rewards):.3f}")
-    print("-" * 40)
+    return {
+        "score": score,
+        "rewards": rewards,
+        "logs": logs,
+        "water_usage": water_usage,
+        "cumulative_water": cumulative_water,
+        "total_water": total_water,
+        "avg_reward": total_reward / steps if steps else 0,
+        "steps": steps,
+        "target_soil": TASK_TARGETS.get(task_name, 55.0),
+        "selected_zone": config.get("selected_zone", 0),
 
-    plot_rewards(rewards)
+        # ✅ REQUIRED FOR UI
+        "avg_soil": avg_soil,
+        "focus_soil": focus_soil,
 
-    return score, rewards, []
+        # placeholders (UI safe)
+        "warnings": [],
+        "reasoning_logs": [],
+    }
 
 
-def run_all():
+# -----------------------------
+# RUN ALL TASKS
+# -----------------------------
+def run_all(config=None):
+    config = normalize_config(config)
+
     scores = {}
     task_rewards = {}
+    tasks_data = {}
 
-    for name, fn in [
-        ("easy", create_easy),
-        ("medium", create_medium),
-        ("hard", create_hard),
-    ]:
-        score, rewards, logs = run_task(name, fn)
+    base_seed = config["seed"]
 
-        scores[name] = score
-        task_rewards[name] = rewards
+    for i, (task_name, create_env_fn) in enumerate(TASK_CREATORS.items()):
+        task_config = dict(config)
+        task_config["seed"] = base_seed + i * 17
+
+        result = run_task(task_name, create_env_fn, task_config)
+
+        scores[task_name] = result["score"]
+        task_rewards[task_name] = result["rewards"]
+        tasks_data[task_name] = result
 
     overall = sum(scores.values()) / len(scores)
 
-    return scores, overall, task_rewards
+    return scores, overall, task_rewards, tasks_data
 
 
+# -----------------------------
+# STREAM FOR UI
+# -----------------------------
+def stream_all(config=None):
+    scores, overall, task_rewards, tasks_data = run_all(config)
+
+    summary = {
+        "scores": scores,
+        "overall": overall,
+        "tasks": tasks_data,
+    }
+
+    yield {
+        "type": "complete",
+        "summary": summary,
+        "metrics": {},
+    }
+
+
+# -----------------------------
+# CLI TEST
+# -----------------------------
+if __name__ == "__main__":
+    scores, overall, _, _ = run_all()
+
+    print("\nFINAL SCORES")
+    print("=" * 40)
+    for k, v in scores.items():
+        print(f"{k.upper()} : {v:.3f}")
+
+    print(f"\nOVERALL : {overall:.3f}")
