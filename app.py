@@ -147,8 +147,6 @@ body::after {
 def launch_with_fallback(demo_app: gr.Blocks) -> None:
     launch_kwargs = {
         "show_error": True,
-        "theme": gr.themes.Base(),
-        "css": APP_CSS,
     }
 
     server_name = os.getenv("GRADIO_SERVER_NAME")
@@ -436,7 +434,7 @@ def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
         yield error_outputs
 
 
-with gr.Blocks(title="Smart Irrigation AI") as demo:
+with gr.Blocks(title="Smart Irrigation AI", theme=gr.themes.Base(), css=APP_CSS) as demo:
     gr.HTML(
         """
         <div class="app-shell">
