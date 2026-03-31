@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from env.irrigation_env import IrrigationEnv
+from irrigation_env import IrrigationEnv
 
 
 def create_env(seed: Optional[int] = None) -> IrrigationEnv:

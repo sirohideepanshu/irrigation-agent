@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from env.irrigation_env import IrrigationEnv
+from irrigation_env import IrrigationEnv
 
 try:
     from openenv.core.env_server.interfaces import Environment
