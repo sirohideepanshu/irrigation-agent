@@ -333,7 +333,7 @@ def _logs_text(summary):
     lines = []
     for task_name in TASK_ORDER:
         lines.extend(summary.get("tasks", {}).get(task_name, {}).get("logs", []))
-    return "\n".join(lines)
+    return str("\n".join(lines))
 
 
 def _current_summary_markdown(summary):
@@ -362,8 +362,8 @@ def _current_summary_markdown(summary):
 
 
 def _build_output_tuple(event, summary, update_plots=True):
-    overview_plots = _build_overview_outputs(summary) if update_plots else tuple(gr.skip() for _ in range(3))
-    task_plots = _build_plot_outputs(summary) if update_plots else tuple(gr.skip() for _ in range(9))
+    overview_plots = _build_overview_outputs(summary) if update_plots else tuple([gr.skip()] * 3)
+    task_plots = _build_plot_outputs(summary) if update_plots else tuple([gr.skip()] * 9)
     return (
         _status_markdown(event),
         _score_markdown(summary),
@@ -406,7 +406,7 @@ def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
             "### Task Snapshot\nThe run stopped before completion.",
             "### 🌱 System Intelligence Insights\nInsights unavailable because the run failed.",
             "### Anomaly Detection\nWarnings unavailable because the run failed.",
-            f'{{"error": "{str(exc)}"}}',
+            f"Error: {str(exc)}",
             *_empty_overview_outputs(),
             *_empty_task_outputs(),
         )
@@ -538,4 +538,4 @@ demo.queue()
 
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=7860, share=True)
