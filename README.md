@@ -1,3 +1,13 @@
+---
+title: Smart Irrigation AI
+emoji: 🌾
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Smart Irrigation AI
 
 ### AI-powered irrigation that saves water, protects crops, and adapts to uncertain weather.
