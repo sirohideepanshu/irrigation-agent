@@ -1,13 +1,40 @@
-.venv/
-venv/
-env/
 __pycache__/
 *.pyc
+.env
+venv/
 
-outputs/
-*.png
-*.jpg
-*.jpeg
-*.gif
+# Python
+*.pyo
+*.pyd
+.python-version
 
-.git/
+# Virtual environments
+.venv/
+env/
+ENV/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
