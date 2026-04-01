@@ -139,8 +139,13 @@ Potential impact:
 
 Built as a hackathon project focused on AI for sustainable agriculture.
 
-If you want, add your details here:
+## 👨‍💻 Team
 
-- Name: Your Name
-- Team: Your Team Name
-- GitHub: Your GitHub Profile
+- **Deepanshu Sirohi**
+ 
+
+- **Sahas Rastohi**
+  
+
+- **Yashraj Gulyani**
+  
