@@ -4,7 +4,7 @@ emoji: 🌾
 colorFrom: green
 colorTo: blue
 sdk: docker
-app_port: 8000
+app_port: 7860
 pinned: false
 short_description: CropPulse AI — Where every drop listens to your crops.
 ---
@@ -35,9 +35,9 @@ This project provides a **deterministic, multi-task CropPulse AI irrigation envi
 - a baseline inference script with reproducible scores
 - Docker deployment for Hugging Face Spaces
 
-The deployed submission is an **OpenEnv-compatible FastAPI server**.
+The deployed experience is the **CropPulse AI Gradio dashboard** exposed from [`app.py`](/Users/adityasingh/Desktop/CropPulse%20AI/app.py).
 
-An optional **Gradio dashboard** is also included locally in [`app.py`](/Users/adityasingh/Desktop/CropPulse%20AI/app.py) for visualization and demos.
+The OpenEnv-compatible FastAPI server remains available in the repository for environment evaluation and local API testing.
 
 ## ✅ OpenEnv Interface
 
@@ -140,26 +140,23 @@ pip install -r requirements.txt
 python inference.py
 ```
 
-### 3. Run the OpenEnv server locally
+### 3. Run the CropPulse AI dashboard locally
+
+```bash
+python app.py
+```
+
+### 4. Optional: run the OpenEnv server locally
+
+If you want the API server for environment testing, run:
 
 ```bash
 uvicorn server_app:app --host 0.0.0.0 --port 8000
 ```
 
-### 4. Optional: run the local Gradio dashboard
-
-If you want the visualization dashboard, run:
-
-```bash
-pip install gradio
-python app.py
-```
-
-Note: the hackathon submission is deployed as the OpenEnv server, not the Gradio dashboard.
-
 ## 🐳 Docker / Hugging Face Spaces
 
-The root [`Dockerfile`](/Users/adityasingh/Desktop/CropPulse%20AI/Dockerfile) launches the OpenEnv server on port `8000`.
+The root [`Dockerfile`](/Users/adityasingh/Desktop/CropPulse%20AI/Dockerfile) launches the CropPulse AI Gradio dashboard on port `7860`.
 
 Build locally:
 
@@ -170,13 +167,13 @@ docker build -t croppulse-ai .
 Run locally:
 
 ```bash
-docker run -p 8000:8000 croppulse-ai
+docker run -p 7860:7860 croppulse-ai
 ```
 
 For Hugging Face Spaces:
 - the repository is configured as `sdk: docker`
-- the app port is `8000`
-- the Space should expose the OpenEnv HTTP server for validation
+- the app port is `7860`
+- the Space should expose the CropPulse AI dashboard UI by default
 
 ## 🖥️ Optional Demo UI
 
