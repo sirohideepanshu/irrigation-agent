@@ -1,10 +1,10 @@
 spec_version: 1
-name: irrigation-optimization-env
-description: Smart irrigation environment with deterministic evaluation, structured reasoning, and Gradio visualization.
+name: aquamind
+description: AquaMind is an OpenEnv-compatible irrigation intelligence environment with deterministic grading across easy, medium, and hard tasks.
 type: space
-runtime: gradio
-app: app.py
-port: 7860
+runtime: fastapi
+app: server_app:app
+port: 8000
 
 tasks:
   - name: easy
@@ -17,4 +17,4 @@ grader:
 
 metadata:
   author: Tensor Titans
-  version: 1.1.0
+  version: 1.2.0

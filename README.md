@@ -1,161 +1,211 @@
 ---
-title: Smart Irrigation AI
+title: AquaMind
 emoji: 🌾
 colorFrom: green
 colorTo: blue
 sdk: docker
-app_port: 7860
+app_port: 8000
 pinned: false
 ---
 
-# Smart Irrigation AI
+# AquaMind
 
-### AI-powered irrigation that saves water, protects crops, and adapts to uncertain weather.
+### AI irrigation that saves water and protects crop health.
 
-## 🌍 Problem Statement
+## 🌍 Why This Problem Matters
 
-Agriculture depends heavily on water, but traditional irrigation often wastes it.
+Irrigation decisions directly affect crop health, water consumption, and farm operating cost.
 
-Farmers face difficult questions every day:
-- How much water should be used?
-- Which field zone needs irrigation most?
-- What if rain is coming soon?
-- How can crop health be protected without overwatering?
+In real farms, farmers need to decide:
+- which zone needs water first
+- how much water should be applied
+- whether incoming rainfall should reduce irrigation
+- how to avoid both crop stress and water waste
 
-In drought-prone and climate-uncertain regions, poor irrigation decisions can lead to:
-- water waste
-- reduced crop yield
-- soil imbalance
-- higher farming costs
+AquaMind models that real-world decision problem as an OpenEnv environment, making it useful for both agent evaluation and sustainable agriculture experimentation.
 
-## 💡 Solution
+## 💡 What This Project Does
 
-Smart Irrigation AI is an intelligent irrigation simulation system that helps optimize water usage based on environmental conditions.
+This project provides a **deterministic, multi-task AquaMind irrigation environment** with:
+- `easy`, `medium`, and `hard` tasks
+- reward-based irrigation simulation
+- typed action and observation models
+- deterministic programmatic grading
+- a baseline inference script with reproducible scores
+- Docker deployment for Hugging Face Spaces
 
-It uses:
-- temperature
-- soil moisture
-- rain forecast
-- zone-based decision logic
+The deployed submission is an **OpenEnv-compatible FastAPI server**.
 
-The system simulates how an AI controller would make irrigation decisions while balancing:
-- crop health
-- water efficiency
-- weather awareness
+An optional **Gradio dashboard** is also included locally in [`app.py`](/Users/adityasingh/Desktop/irrigation-openenv/app.py) for visualization and demos.
 
-## ✨ Features
+## ✅ OpenEnv Interface
 
-- AI-based irrigation decision simulation
-- Zone-wise irrigation control
-- Inputs for temperature, soil moisture, and rain forecast
-- Reward-based performance evaluation
-- Live Gradio dashboard
-- Soil moisture trend graphs
-- Water usage trend graphs
-- Reward trend visualization
-- Multi-scenario benchmarking
-- Hugging Face Spaces deployment support
+The core environment is implemented in [`irrigation_env.py`](/Users/adityasingh/Desktop/irrigation-openenv/irrigation_env.py).
 
-## ⚙️ How It Works
+It follows the required interface:
+- `reset()` returns the initial observation as a `dict`
+- `step(action)` returns `(observation: dict, reward: float, done: bool, info: dict)`
+- `state()` returns the current environment state
 
-1. The user sets environmental conditions such as temperature, rainfall forecast, and soil moisture.
-2. The simulator evaluates the current irrigation state.
-3. The AI determines how much water should be applied to the selected zone.
-4. The environment updates soil moisture and water usage.
-5. Rewards are calculated based on efficiency and crop health.
-6. Graphs display performance over time.
-7. The system repeats this process across multiple task difficulties.
+The root submission metadata is defined in [`openenv.yaml`](/Users/adityasingh/Desktop/irrigation-openenv/openenv.yaml).
 
-## 🧠 Tech Stack
+## 🧠 Tasks
 
-- Python
-- Gradio
-- NumPy
-- Matplotlib
-- Hugging Face Spaces
-- Docker
+The environment includes 3 graded tasks:
 
-## 📊 Demo / Output
+- `easy`: fewer zones, milder weather variation, simpler water balancing
+- `medium`: more zones, tighter water constraints, broader weather drift
+- `hard`: highest uncertainty, stronger temperature pressure, and stricter water allocation tradeoffs
 
-The system provides a visual simulation dashboard with:
-- reward trend graphs
-- soil moisture graphs
-- water usage graphs
-- final performance scores
-- task-level benchmarking
+These tasks are implemented in:
+- [`tasks/easy.py`](/Users/adityasingh/Desktop/irrigation-openenv/tasks/easy.py)
+- [`tasks/medium.py`](/Users/adityasingh/Desktop/irrigation-openenv/tasks/medium.py)
+- [`tasks/hard.py`](/Users/adityasingh/Desktop/irrigation-openenv/tasks/hard.py)
 
-This makes it easy for judges and users to understand:
-- how the AI is making decisions
-- how efficiently water is being used
-- how stable the irrigation strategy is
+## 📦 Observation Space
 
-## 🚀 Installation
+Observations include:
+- `soil_moisture`: moisture values for each irrigation zone
+- `water_budget`: remaining available irrigation water
+- `rain_forecast`: forecast probability for rainfall
+- `temperature`: ambient temperature
+- `day`: current step index
+- `max_steps`: episode horizon
+- `target_moisture`: target moisture band
+- `last_reward`: reward from the previous step
+- `last_action`: validated action applied by the environment
 
-Clone the repository:
+## 🎯 Action Space
 
-```bash
-git clone <your-repo-url>
-cd <your-project-folder>
+Actions use:
+- `zone_id`: integer zone index
+- `water_mm`: irrigation amount in millimeters
+
+Validation rules:
+- invalid zones raise an error
+- negative water requests are clipped to `0`
+- irrigation is capped at `12 mm`
+- actions cannot exceed remaining budget
+
+Typed models are defined in:
+- [`models.py`](/Users/adityasingh/Desktop/irrigation-openenv/models.py)
+- [`tensor_titans_irrigation/models.py`](/Users/adityasingh/Desktop/irrigation-openenv/tensor_titans_irrigation/models.py)
+
+## 🏆 Reward Function
+
+The reward is designed to be meaningful across the full trajectory, not only at the episode end.
+
+It combines:
+- `crop health`: rewards moisture near the task target band
+- `water efficiency`: discourages unnecessary irrigation
+- `rain awareness`: reduces reward for watering aggressively before likely rainfall
+- `penalties`: punishes overwatering, underwatering, budget misuse, and extreme actions
+
+This makes the environment suitable for agent learning and for hackathon evaluation focused on realistic partial progress signals.
+
+## 📊 Baseline Results
+
+Running [`inference.py`](/Users/adityasingh/Desktop/irrigation-openenv/inference.py) prints deterministic baseline scores:
+
+```text
+FINAL SCORES
+Easy: 0.922
+Medium: 0.736
+Hard: 0.523
+Overall: 0.727
 ```
 
-Install dependencies:
+## 🧪 Grading
+
+Programmatic grading lives in [`grader/grader.py`](/Users/adityasingh/Desktop/irrigation-openenv/grader/grader.py).
+
+The grader:
+- evaluates all 3 tasks
+- produces scores in the `0.0` to `1.0` range
+- returns an overall score
+- is deterministic for the same seed/configuration
+
+## 🚀 How To Run Locally
+
+### 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run the app:
+### 2. Run the baseline inference script
 
 ```bash
+python inference.py
+```
+
+### 3. Run the OpenEnv server locally
+
+```bash
+uvicorn server_app:app --host 0.0.0.0 --port 8000
+```
+
+### 4. Optional: run the local Gradio dashboard
+
+If you want the visualization dashboard, run:
+
+```bash
+pip install gradio
 python app.py
 ```
 
-## ▶️ Usage
+Note: the hackathon submission is deployed as the OpenEnv server, not the Gradio dashboard.
 
-1. Launch the Gradio app.
-2. Adjust:
-   - temperature
-   - rain forecast
-   - soil moisture
-   - zone selection
-3. Start the simulation.
-4. Observe:
-   - live outputs
-   - performance metrics
-   - irrigation graphs
-5. Compare behavior across different task difficulties.
+## 🐳 Docker / Hugging Face Spaces
+
+The root [`Dockerfile`](/Users/adityasingh/Desktop/irrigation-openenv/Dockerfile) launches the OpenEnv server on port `8000`.
+
+Build locally:
+
+```bash
+docker build -t aquamind .
+```
+
+Run locally:
+
+```bash
+docker run -p 8000:8000 aquamind
+```
+
+For Hugging Face Spaces:
+- the repository is configured as `sdk: docker`
+- the app port is `8000`
+- the Space should expose the OpenEnv HTTP server for validation
+
+## 🖥️ Optional Demo UI
+
+The included dashboard:
+- visualizes reward trends
+- shows soil moisture plots
+- shows water usage plots
+- helps explain task performance for demos and presentations
+
+The dashboard code is in [`app.py`](/Users/adityasingh/Desktop/irrigation-openenv/app.py).
 
 ## 🌱 Real-World Impact
 
-Smart Irrigation AI can help demonstrate how AI can support sustainable agriculture.
+This project demonstrates how AI can support:
+- water conservation in drought-prone regions
+- improved crop stability
+- better response to weather uncertainty
+- zone-specific irrigation planning
+- scalable decision support for future IoT-enabled farms
 
-Potential impact:
-- saves water in drought-prone regions
-- reduces overwatering and underwatering risk
-- improves crop health
-- supports data-driven farming decisions
-- scales toward IoT-enabled smart farming systems
+## 🔮 Future Work
 
-## 🔮 Future Improvements
+- live weather API integration
+- crop-specific agronomic models
+- IoT sensor ingestion
+- reinforcement learning policy training
+- multi-farm seasonal optimization
 
-- Real-time IoT sensor integration
-- Mobile dashboard for farmers
-- Weather API integration
-- Reinforcement learning-based adaptive policies
-- Farm-specific crop models
-- Multi-zone optimization at larger scale
+## 👥 Team
 
-## 👤 Author
-
-Built as a hackathon project focused on AI for sustainable agriculture.
-
-## 👨‍💻 Team
-
-- **Deepanshu Sirohi**
- 
-
-- **Sahas Rastohi**
-  
-
-- **Yashraj Gulyani**
-  
+- Deepanshu Sirohi
+- Sahas Rastohi
+- Yashraj Gulyani

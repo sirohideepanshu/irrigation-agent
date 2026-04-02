@@ -433,13 +433,13 @@ def run_simulation(temperature, rain_forecast, soil_moisture, zone_label):
         yield _safe_output_tuple(error_outputs)
 
 
-with gr.Blocks(title="Smart Irrigation AI", theme=gr.themes.Default(), css=APP_CSS) as demo:
+with gr.Blocks(title="AquaMind", theme=gr.themes.Default(), css=APP_CSS) as demo:
     gr.HTML(
         """
         <div class="app-shell">
           <div class="hero">
-            <h1>Smart Irrigation AI Control Center</h1>
-            <p>AI-powered irrigation system that reduces water waste while maintaining optimal crop health under uncertain weather conditions.</p>
+            <h1>AquaMind Control Center</h1>
+            <p>AquaMind: AI irrigation that saves water and protects crop health.</p>
           </div>
         </div>
         """

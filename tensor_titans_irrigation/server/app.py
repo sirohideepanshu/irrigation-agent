@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-FastAPI application for the Tensor Titans Irrigation Environment.
+FastAPI application for the AquaMind irrigation environment.
 
 This module creates an HTTP server that exposes the TensorTitansIrrigationEnvironment
 over HTTP and WebSocket endpoints, compatible with EnvClient.

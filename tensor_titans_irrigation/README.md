@@ -1,5 +1,5 @@
 ---
-title: Tensor Titans Irrigation Environment Server
+title: AquaMind Environment Server
 emoji: 🌱
 colorFrom: green
 colorTo: blue
@@ -11,9 +11,9 @@ tags:
   - openenv
 ---
 
-# Tensor Titans Irrigation Environment
+# AquaMind Environment Server
 
-This package exposes the smart irrigation environment as an OpenEnv-compatible FastAPI server.
+This package exposes the AquaMind irrigation environment as an OpenEnv-compatible FastAPI server.
 
 ## What The Server Provides
 
@@ -40,8 +40,8 @@ This package exposes the smart irrigation environment as an OpenEnv-compatible F
 ## Run Locally
 
 ```bash
-docker build -t tensor-titans-irrigation-env:latest -f server/Dockerfile .
-docker run -p 8000:8000 tensor-titans-irrigation-env:latest
+docker build -t aquamind-env:latest -f server/Dockerfile .
+docker run -p 8000:8000 aquamind-env:latest
 ```
 
 ## Deploy
