@@ -6,6 +6,7 @@ colorTo: blue
 sdk: docker
 app_port: 8000
 pinned: false
+short_description: CropPulse AI — Where every drop listens to your crops.
 ---
 
 # 🌱 CropPulse AI
@@ -36,18 +37,18 @@ This project provides a **deterministic, multi-task CropPulse AI irrigation envi
 
 The deployed submission is an **OpenEnv-compatible FastAPI server**.
 
-An optional **Gradio dashboard** is also included locally in [`app.py`](/Users/adityasingh/Desktop/irrigation-openenv/app.py) for visualization and demos.
+An optional **Gradio dashboard** is also included locally in [`app.py`](/Users/adityasingh/Desktop/CropPulse%20AI/app.py) for visualization and demos.
 
 ## ✅ OpenEnv Interface
 
-The core environment is implemented in [`irrigation_env.py`](/Users/adityasingh/Desktop/irrigation-openenv/irrigation_env.py).
+The core environment is implemented in [`irrigation_env.py`](/Users/adityasingh/Desktop/CropPulse%20AI/irrigation_env.py).
 
 It follows the required interface:
 - `reset()` returns the initial observation as a `dict`
 - `step(action)` returns `(observation: dict, reward: float, done: bool, info: dict)`
 - `state()` returns the current environment state
 
-The root submission metadata is defined in [`openenv.yaml`](/Users/adityasingh/Desktop/irrigation-openenv/openenv.yaml).
+The root submission metadata is defined in [`openenv.yaml`](/Users/adityasingh/Desktop/CropPulse%20AI/openenv.yaml).
 
 ## 🧠 Tasks
 
@@ -58,9 +59,9 @@ The environment includes 3 graded tasks:
 - `hard`: highest uncertainty, stronger temperature pressure, and stricter water allocation tradeoffs
 
 These tasks are implemented in:
-- [`tasks/easy.py`](/Users/adityasingh/Desktop/irrigation-openenv/tasks/easy.py)
-- [`tasks/medium.py`](/Users/adityasingh/Desktop/irrigation-openenv/tasks/medium.py)
-- [`tasks/hard.py`](/Users/adityasingh/Desktop/irrigation-openenv/tasks/hard.py)
+- [`tasks/easy.py`](/Users/adityasingh/Desktop/CropPulse%20AI/tasks/easy.py)
+- [`tasks/medium.py`](/Users/adityasingh/Desktop/CropPulse%20AI/tasks/medium.py)
+- [`tasks/hard.py`](/Users/adityasingh/Desktop/CropPulse%20AI/tasks/hard.py)
 
 ## 📦 Observation Space
 
@@ -88,8 +89,8 @@ Validation rules:
 - actions cannot exceed remaining budget
 
 Typed models are defined in:
-- [`models.py`](/Users/adityasingh/Desktop/irrigation-openenv/models.py)
-- [`tensor_titans_irrigation/models.py`](/Users/adityasingh/Desktop/irrigation-openenv/tensor_titans_irrigation/models.py)
+- [`models.py`](/Users/adityasingh/Desktop/CropPulse%20AI/models.py)
+- [`tensor_titans_irrigation/models.py`](/Users/adityasingh/Desktop/CropPulse%20AI/tensor_titans_irrigation/models.py)
 
 ## 🏆 Reward Function
 
@@ -105,7 +106,7 @@ This makes the environment suitable for agent learning and for hackathon evaluat
 
 ## 📊 Baseline Results
 
-Running [`inference.py`](/Users/adityasingh/Desktop/irrigation-openenv/inference.py) prints deterministic baseline scores:
+Running [`inference.py`](/Users/adityasingh/Desktop/CropPulse%20AI/inference.py) prints deterministic baseline scores:
 
 ```text
 FINAL SCORES
@@ -117,7 +118,7 @@ Overall: 0.727
 
 ## 🧪 Grading
 
-Programmatic grading lives in [`grader/grader.py`](/Users/adityasingh/Desktop/irrigation-openenv/grader/grader.py).
+Programmatic grading lives in [`grader/grader.py`](/Users/adityasingh/Desktop/CropPulse%20AI/grader/grader.py).
 
 The grader:
 - evaluates all 3 tasks
@@ -158,7 +159,7 @@ Note: the hackathon submission is deployed as the OpenEnv server, not the Gradio
 
 ## 🐳 Docker / Hugging Face Spaces
 
-The root [`Dockerfile`](/Users/adityasingh/Desktop/irrigation-openenv/Dockerfile) launches the OpenEnv server on port `8000`.
+The root [`Dockerfile`](/Users/adityasingh/Desktop/CropPulse%20AI/Dockerfile) launches the OpenEnv server on port `8000`.
 
 Build locally:
 
@@ -185,7 +186,7 @@ The included dashboard:
 - shows water usage plots
 - helps explain task performance for demos and presentations
 
-The dashboard code is in [`app.py`](/Users/adityasingh/Desktop/irrigation-openenv/app.py).
+The dashboard code is in [`app.py`](/Users/adityasingh/Desktop/CropPulse%20AI/app.py).
 
 ## 🌱 Real-World Impact
 
