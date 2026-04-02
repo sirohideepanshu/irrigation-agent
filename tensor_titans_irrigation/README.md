@@ -1,5 +1,5 @@
 ---
-title: AquaMind Environment Server
+title: CropPulse AI Environment Server
 emoji: 🌱
 colorFrom: green
 colorTo: blue
@@ -11,9 +11,9 @@ tags:
   - openenv
 ---
 
-# AquaMind Environment Server
+# CropPulse AI Environment Server
 
-This package exposes the AquaMind irrigation environment as an OpenEnv-compatible FastAPI server.
+This package exposes the CropPulse AI irrigation environment as an OpenEnv-compatible FastAPI server.
 
 ## What The Server Provides
 
@@ -40,8 +40,8 @@ This package exposes the AquaMind irrigation environment as an OpenEnv-compatibl
 ## Run Locally
 
 ```bash
-docker build -t aquamind-env:latest -f server/Dockerfile .
-docker run -p 8000:8000 aquamind-env:latest
+docker build -t croppulse-ai-env:latest -f server/Dockerfile .
+docker run -p 8000:8000 croppulse-ai-env:latest
 ```
 
 ## Deploy

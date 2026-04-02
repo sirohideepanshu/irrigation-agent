@@ -1,7 +1,7 @@
 [project]
 name = "tensor_titans_irrigation"
 version = "0.1.0"
-description = "AquaMind: AI irrigation that saves water and protects crop health"
+description = "CropPulse AI: Where every drop listens to your crops."
 authors = [
     { name = "Tensor Titans" }
 ]

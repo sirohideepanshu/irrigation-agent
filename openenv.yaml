@@ -1,6 +1,6 @@
 spec_version: 1
-name: aquamind
-description: AquaMind is an OpenEnv-compatible irrigation intelligence environment with deterministic grading across easy, medium, and hard tasks.
+name: croppulse-ai
+description: CropPulse AI is an OpenEnv-compatible irrigation intelligence environment with deterministic grading across easy, medium, and hard tasks.
 type: space
 runtime: fastapi
 app: server_app:app

@@ -1,5 +1,5 @@
 ---
-title: AquaMind
+title: CropPulse AI
 emoji: 🌾
 colorFrom: green
 colorTo: blue
@@ -8,9 +8,9 @@ app_port: 8000
 pinned: false
 ---
 
-# AquaMind
+# 🌱 CropPulse AI
 
-### AI irrigation that saves water and protects crop health.
+*Where every drop listens to your crops.*
 
 ## 🌍 Why This Problem Matters
 
@@ -22,11 +22,11 @@ In real farms, farmers need to decide:
 - whether incoming rainfall should reduce irrigation
 - how to avoid both crop stress and water waste
 
-AquaMind models that real-world decision problem as an OpenEnv environment, making it useful for both agent evaluation and sustainable agriculture experimentation.
+CropPulse AI turns irrigation management into a premium, production-ready intelligence layer for modern farming. It models real-world water allocation decisions as an OpenEnv environment, making it useful for both agent evaluation and sustainable agriculture experimentation.
 
 ## 💡 What This Project Does
 
-This project provides a **deterministic, multi-task AquaMind irrigation environment** with:
+This project provides a **deterministic, multi-task CropPulse AI irrigation environment** with:
 - `easy`, `medium`, and `hard` tasks
 - reward-based irrigation simulation
 - typed action and observation models
@@ -163,13 +163,13 @@ The root [`Dockerfile`](/Users/adityasingh/Desktop/irrigation-openenv/Dockerfile
 Build locally:
 
 ```bash
-docker build -t aquamind .
+docker build -t croppulse-ai .
 ```
 
 Run locally:
 
 ```bash
-docker run -p 8000:8000 aquamind
+docker run -p 8000:8000 croppulse-ai
 ```
 
 For Hugging Face Spaces:

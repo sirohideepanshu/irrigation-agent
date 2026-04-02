@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-FastAPI application for the AquaMind irrigation environment.
+FastAPI application for the CropPulse AI irrigation environment.
 
 This module creates an HTTP server that exposes the TensorTitansIrrigationEnvironment
 over HTTP and WebSocket endpoints, compatible with EnvClient.

@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-"""AquaMind irrigation environment."""
+"""CropPulse AI irrigation environment."""
 
 from .client import TensorTitansIrrigationEnv
 from .models import TensorTitansIrrigationAction, TensorTitansIrrigationObservation
