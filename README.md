@@ -4,6 +4,8 @@ emoji: 🌾
 colorFrom: green
 colorTo: blue
 sdk: docker
+tags:
+  - openenv
 app_port: 8000
 pinned: false
 short_description: CropPulse AI — Where every drop listens to your crops.
